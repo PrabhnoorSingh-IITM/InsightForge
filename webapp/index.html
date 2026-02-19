@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Research Console - E-Commerce Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Research Console</p>
+          <h1>E-Commerce Intelligence Agent</h1>
+          <p class="subtitle">Run commerce analysis in Quick or Deep mode without touching code.</p>
+        </div>
+        <div class="status">
+          <span id="healthBadge" class="badge badge-muted">API: checking...</span>
+          <span id="authBadge" class="badge badge-muted">Auth: checking...</span>
+        </div>
+      </header>
+
+      <main class="grid">
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Analysis Configuration</h2>
+            <p>Set how the agent should reason.</p>
+          </div>
+
+          <div class="field">
+            <label>Mode</label>
+            <select id="mode">
+              <option value="quick">Quick</option>
+              <option value="deep" selected>Deep</option>
+            </select>
+            <span id="modeError" class="field-error"></span>
+          </div>
+
+          <div class="field">
+            <label>Business Goal</label>
+            <select id="goal">
+              <option value="growth">Growth</option>
+              <option value="retention">Retention</option>
+              <option value="profitability">Profitability</option>
+              <option value="market expansion">Market Expansion</option>
+            </select>
+            <span id="goalError" class="field-error"></span>
+          </div>
+
+          <div class="field">
+            <label>Scope Type</label>
+            <select id="scopeType">
+              <option value="SKU">SKU</option>
+              <option value="Category">Category</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Scope Value</label>
+            <input id="scopeValue" placeholder="e.g., SKU-472 or Bluetooth Earbuds" />
+            <span id="scopeValueError" class="field-error"></span>
+          </div>
+
+          <div class="field">
+            <label>API Base URL</label>
+            <input id="apiBaseUrl" placeholder="http://127.0.0.1:8000" />
+            <span id="apiBaseUrlError" class="field-error"></span>
+          </div>
+
+          <div class="field">
+            <label>API Key (optional)</label>
+            <input id="apiKey" placeholder="x-api-key value" />
+            <small>Only required if backend has ECOM_AGENT_API_KEY enabled.</small>
+          </div>
+
+          <div class="field">
+            <label>Constraints</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" value="Margin optimization" class="constraint" />Margin optimization</label>
+              <label><input type="checkbox" value="Negative reviews only" class="constraint" />Negative reviews only</label>
+              <label><input type="checkbox" value="Premium competitors only" class="constraint" />Premium competitors only</label>
+              <label><input type="checkbox" value="Flag incomplete data" class="constraint" />Flag incomplete data</label>
+            </div>
+          </div>
+
+          <button id="runBtn" class="primary">
+            <span class="btn-text">Run Analysis</span>
+            <span class="spinner" aria-hidden="true"></span>
+          </button>
+          <p id="runStatus" class="status-text"></p>
+          <div id="alert" class="alert hidden"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Dataset Management</h2>
+            <p>Upload CSVs and map them to the required sources.</p>
+          </div>
+
+          <div class="field">
+            <label>Upload CSV files</label>
+            <input id="fileInput" type="file" accept=".csv" multiple />
+            <small>Files are parsed in-browser and sent inline to the API.</small>
+          </div>
+
+          <div id="fileList" class="file-list"></div>
+
+          <div class="mapping">
+            <h3>Dataset Mapping</h3>
+            <div class="mapping-grid">
+              <div class="mapping-item">
+                <span>Catalog</span>
+                <span id="mapCatalog" class="map-status">Not mapped</span>
+              </div>
+              <div class="mapping-item">
+                <span>Reviews</span>
+                <span id="mapReviews" class="map-status">Not mapped</span>
+              </div>
+              <div class="mapping-item">
+                <span>Pricing</span>
+                <span id="mapPricing" class="map-status">Not mapped</span>
+              </div>
+              <div class="mapping-item">
+                <span>Competitors</span>
+                <span id="mapCompetitors" class="map-status">Not mapped</span>
+              </div>
+              <div class="mapping-item">
+                <span>Performance</span>
+                <span id="mapPerformance" class="map-status">Not mapped</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <h2>Research Output</h2>
+            <p>Structured insights and strategic recommendations.</p>
+          </div>
+
+          <div class="badges">
+            <span id="confidenceBadge" class="badge badge-muted">Confidence: --</span>
+            <span id="completenessBadge" class="badge badge-muted">Completeness: --</span>
+          </div>
+
+          <div class="chart-wrap">
+            <canvas id="confidenceChart" height="140"></canvas>
+          </div>
+
+          <div class="section">
+            <h3>Risk Flags</h3>
+            <ul id="riskList" class="list muted">
+              <li>No report yet.</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h3>Strategic Recommendations</h3>
+            <ul id="recommendations" class="list highlight">
+              <li>Run analysis to generate recommendations.</li>
+            </ul>
+          </div>
+
+          <div class="section">
+            <h3>Full Report (Markdown)</h3>
+            <div id="report" class="report">Waiting for analysis...</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast hidden">Report loaded successfully.</div>
+
+    <script type="module" src="config.js"></script>
+    <script type="module" src="api.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
