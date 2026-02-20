@@ -1,7 +1,5 @@
 import { CONFIG } from "./config.js";
 
-let confidenceChart = null;
-
 export function setHealthStatus(isOk) {
   const badge = document.getElementById("healthBadge");
   badge.textContent = isOk ? "API: online" : "API: offline";
@@ -85,20 +83,37 @@ export function extractMeta(report) {
 }
 
 export function updateBadges(meta) {
+  const confidenceScore = document.getElementById("confidenceScore");
   const confidenceBadge = document.getElementById("confidenceBadge");
-  const completenessBadge = document.getElementById("completenessBadge");
+  const completenessScore = document.getElementById("completenessScore");
+  const completenessMeter = document.getElementById("completenessMeter");
 
+  // Update confidence metric card
   if (meta.confidence !== null) {
-    const { label, className } = scoreToBadge(meta.confidence);
-    confidenceBadge.textContent = `Confidence: ${meta.confidence}% (${label})`;
+    const { label, className, colorClass } = scoreToBadge(meta.confidence);
+    confidenceScore.textContent = `${meta.confidence}%`;
+    confidenceScore.className = `metric-value ${colorClass}`;
+    confidenceBadge.textContent = label;
     confidenceBadge.className = `badge ${className}`;
+  } else {
+    confidenceScore.textContent = "--";
+    confidenceScore.className = "metric-value";
+    confidenceBadge.textContent = "--";
+    confidenceBadge.className = "badge badge-muted";
   }
 
-  if (meta.completenessLabel) {
-    completenessBadge.textContent = meta.completenessScore
-      ? `Completeness: ${meta.completenessLabel} (${meta.completenessScore}%)`
-      : `Completeness: ${meta.completenessLabel}`;
-    completenessBadge.className = "badge badge-muted";
+  // Update completeness metric card with animated meter
+  if (meta.completenessScore !== null) {
+    completenessScore.textContent = `${meta.completenessScore}%`;
+    const meterProgress = completenessMeter.querySelector(".meter-progress");
+    if (meterProgress) {
+      // Trigger reflow to ensure animation plays
+      void meterProgress.offsetWidth;
+      meterProgress.style.width = `${meta.completenessScore}%`;
+      meterProgress.style.background = getLinearGradient(meta.completenessScore);
+    }
+  } else {
+    completenessScore.textContent = "--";
   }
 }
 
@@ -115,38 +130,8 @@ export function updateRecommendations(report) {
 }
 
 export function updateChart(confidence) {
-  const canvas = document.getElementById("confidenceChart");
-  if (!window.Chart) {
-    return;
-  }
-
-  const dataValue = confidence ?? 0;
-  const remaining = 100 - dataValue;
-  const chartData = {
-    labels: ["Confidence", "Remaining"],
-    datasets: [
-      {
-        data: [dataValue, remaining],
-        backgroundColor: ["#5da3ff", "rgba(255,255,255,0.12)"],
-        borderWidth: 0,
-        cutout: "75%",
-      },
-    ],
-  };
-
-  if (confidenceChart) {
-    confidenceChart.destroy();
-  }
-
-  confidenceChart = new window.Chart(canvas, {
-    type: "doughnut",
-    data: chartData,
-    options: {
-      plugins: { legend: { display: false } },
-      responsive: true,
-      maintainAspectRatio: false,
-    },
-  });
+  // Chart removed in favor of metric cards
+  // Kept for backwards compatibility
 }
 
 export function getFormValues() {
@@ -158,8 +143,6 @@ export function getFormValues() {
     marketplace: document.getElementById("marketplace").value.trim(),
     region: document.getElementById("region").value.trim(),
     timeframe: document.getElementById("timeframe").value.trim(),
-    apiBaseUrl: document.getElementById("apiBaseUrl").value.trim() || CONFIG.API_BASE_URL,
-    apiKey: document.getElementById("apiKey").value.trim(),
     constraints: Array.from(document.querySelectorAll(".constraint:checked")).map((input) => input.value),
   };
 }
@@ -177,12 +160,24 @@ export function setDefaultValues() {
 
 export function scoreToBadge(score) {
   if (score >= 75) {
-    return { label: "High", className: "badge-good" };
+    return { label: "High", className: "badge-confidence-high", colorClass: "value-high" };
   }
   if (score >= 50) {
-    return { label: "Medium", className: "badge-warn" };
+    return { label: "Medium", className: "badge-confidence-mid", colorClass: "value-mid" };
   }
-  return { label: "Low", className: "badge-bad" };
+  return { label: "Low", className: "badge-confidence-low", colorClass: "value-low" };
+}
+
+function getCompletenessColor(score) {
+  if (score >= 75) return "rgba(78, 209, 139, 0.5)";
+  if (score >= 50) return "rgba(242, 201, 76, 0.5)";
+  return "rgba(255, 107, 107, 0.5)";
+}
+
+function getLinearGradient(score) {
+  if (score >= 75) return "linear-gradient(90deg, #4ed18b, #41b883)";
+  if (score >= 50) return "linear-gradient(90deg, #f2c94c, #e6b800)";
+  return "linear-gradient(90deg, #ff6b6b, #ff5252)";
 }
 
 function extractSection(report, sectionTitle) {

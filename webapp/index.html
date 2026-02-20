@@ -12,62 +12,46 @@
     />
     <link rel="stylesheet" href="styles.css" />
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
     <div class="page">
       <header class="header">
-        <div>
-          <p class="eyebrow">Research Console</p>
+        <div class="hero">
+          <p class="eyebrow">🚀 Research Made Simple</p>
           <h1>E-Commerce Intelligence Agent</h1>
-          <p class="subtitle">Upload data or use the sample datasets to generate a decision-ready report.</p>
-        </div>
-        <div class="status">
-          <span id="healthBadge" class="badge badge-muted">API: checking...</span>
-          <span id="authBadge" class="badge badge-muted">Auth: checking...</span>
+          <p class="subtitle">Analyze your products in minutes. Get actionable insights backed by data.</p>
+          <p class="description">Upload your datasets or use our samples. Our agent finds gaps, flags risks, and gives you strategies.</p>
         </div>
       </header>
 
+      <!-- Onboarding Tour Section -->
+      <section class="onboarding">
+        <div class="tour-card">
+          <div class="tour-step">
+            <div class="tour-number">1</div>
+            <h3>Tell Us Your Goal</h3>
+            <p>Pick "Quick" for fast answers or "Deep" for comprehensive strategy. Choose what matters to you: growth, retention, profitability, or market expansion.</p>
+          </div>
+          <div class="tour-step">
+            <div class="tour-number">2</div>
+            <h3>Choose Your Data</h3>
+            <p>Use our built-in sample datasets for instant results, or upload your own CSVs. Our system auto-detects and maps your data.</p>
+          </div>
+          <div class="tour-step">
+            <div class="tour-number">3</div>
+            <h3>Get Smart Insights</h3>
+            <p>Receive a structured report with confidence scores, risk flags, and actionable recommendations. All in plain language.</p>
+          </div>
+        </div>
+        <button id="startTourBtn" class="cta-button">Start Your Analysis</button>
+      </section>
+
       <main class="grid">
-        <section class="panel panel-step">
-          <div class="panel-header">
-            <h2>Start Here</h2>
-            <p>Fill the basics, pick your data, then run the analysis.</p>
-          </div>
-
-          <div class="step-list">
-            <div class="step-item">
-              <span class="step-index">1</span>
-              <div>
-                <strong>Choose a goal and scope</strong>
-                <p>Tell the agent what to analyze.</p>
-              </div>
-            </div>
-            <div class="step-item">
-              <span class="step-index">2</span>
-              <div>
-                <strong>Pick your data</strong>
-                <p>Use the sample datasets or upload CSVs.</p>
-              </div>
-            </div>
-            <div class="step-item">
-              <span class="step-index">3</span>
-              <div>
-                <strong>Run and review</strong>
-                <p>Read the report and recommendations on the right.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="inline-actions">
-            <button id="demoBtn" class="ghost">Load demo values</button>
-          </div>
-        </section>
-
-        <section class="panel">
+        <!-- LEFT PANEL: Analysis Configuration -->
+        <section class="panel panel-l">
           <div class="panel-header">
             <h2>Analysis Setup</h2>
-            <p>Define the goal, scope, and where the API is running.</p>
+            <p>Define your research query.</p>
           </div>
 
           <div class="field">
@@ -121,42 +105,22 @@
             <input id="timeframe" placeholder="e.g., Last 30 days" />
           </div>
 
-          <div class="field">
-            <label>API Base URL</label>
-            <input id="apiBaseUrl" placeholder="http://127.0.0.1:8000" />
-            <span id="apiBaseUrlError" class="field-error"></span>
-          </div>
-
-          <div class="field">
-            <label>API Key (optional)</label>
-            <input id="apiKey" placeholder="x-api-key value" />
-            <small>Only required if backend has ECOM_AGENT_API_KEY enabled.</small>
-          </div>
-
-          <div class="field">
-            <label>Constraints</label>
-            <div class="checkbox-group">
-              <label><input type="checkbox" value="Margin optimization" class="constraint" />Margin optimization</label>
-              <label><input type="checkbox" value="Negative reviews only" class="constraint" />Negative reviews only</label>
-              <label><input type="checkbox" value="Premium competitors only" class="constraint" />Premium competitors only</label>
-              <label><input type="checkbox" value="Flag incomplete data" class="constraint" />Flag incomplete data</label>
-            </div>
-          </div>
-
           <div class="run-row">
             <button id="runBtn" class="primary">
               <span class="btn-text">Run Analysis</span>
               <span class="spinner" aria-hidden="true"></span>
             </button>
+            <button id="demoBtn" class="secondary">Load demo values</button>
             <p id="runStatus" class="status-text"></p>
           </div>
           <div id="alert" class="alert hidden"></div>
         </section>
 
-        <section class="panel">
+        <!-- CENTER PANEL: Dataset Management -->
+        <section class="panel panel-c">
           <div class="panel-header">
             <h2>Data Sources</h2>
-            <p>Use the sample datasets or upload your own CSVs.</p>
+            <p>Use sample or upload your CSVs.</p>
           </div>
 
           <div class="field">
@@ -208,19 +172,26 @@
           </div>
         </section>
 
-        <section class="panel panel-output">
+        <!-- RIGHT PANEL: Research Output -->
+        <section class="panel panel-r">
           <div class="panel-header">
             <h2>Research Output</h2>
-            <p>Structured insights and strategic recommendations.</p>
+            <p>Insights, metrics, and recommendations.</p>
           </div>
 
-          <div class="badges">
-            <span id="confidenceBadge" class="badge badge-muted">Confidence: --</span>
-            <span id="completenessBadge" class="badge badge-muted">Completeness: --</span>
-          </div>
-
-          <div class="chart-wrap">
-            <canvas id="confidenceChart" height="140"></canvas>
+          <div class="metrics-row">
+            <div class="metric-card">
+              <div class="metric-label">Confidence</div>
+              <div id="confidenceScore" class="metric-value">--</div>
+              <span id="confidenceBadge" class="badge badge-muted">--</span>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Completeness</div>
+              <div id="completenessScore" class="metric-value">--</div>
+              <div id="completenessMeter" class="completeness-meter">
+                <div class="meter-progress"></div>
+              </div>
+            </div>
           </div>
 
           <div class="section">

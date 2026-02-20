@@ -1,13 +1,11 @@
 import { CONFIG } from "./config.js";
-import { fetchAuthStatus, fetchHealth, runAnalysis } from "./api.js";
+import { runAnalysis } from "./api.js";
 import {
   clearAlert,
   extractMeta,
   getFormValues,
   renderReport,
-  setAuthStatus,
   setDefaultValues,
-  setHealthStatus,
   setLoading,
   showAlert,
   showToast,
@@ -373,7 +371,7 @@ async function run() {
   };
 
   try {
-    const response = await runAnalysis(payload, values.apiKey, values.apiBaseUrl);
+    const response = await runAnalysis(payload);
     renderReport(response.report);
 
     const meta = extractMeta(response.report);
@@ -395,22 +393,7 @@ async function run() {
 async function init() {
   setDefaultValues();
   updateMappingStatus(datasetState.mapping);
-
   setDataMode(getSelectedDataMode());
-
-  try {
-    await fetchHealth(CONFIG.API_BASE_URL);
-    setHealthStatus(true);
-  } catch {
-    setHealthStatus(false);
-  }
-
-  try {
-    const auth = await fetchAuthStatus(CONFIG.API_BASE_URL);
-    setAuthStatus(auth.api_key_required);
-  } catch {
-    setAuthStatus(false);
-  }
 }
 
 function getSelectedDataMode() {
@@ -439,6 +422,12 @@ demoBtn.addEventListener("click", () => {
 });
 dataModeInputs.forEach((input) => {
   input.addEventListener("change", () => setDataMode(getSelectedDataMode()));
+});
+
+document.getElementById("startTourBtn").addEventListener("click", () => {
+  const dashboardSection = document.querySelector(".grid");
+  dashboardSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => setDefaultValues(), 600);
 });
 
 init();
