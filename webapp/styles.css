@@ -98,6 +98,99 @@ body {
   position: relative;
 }
 
+/* Storytelling Scroll Animations & Block */
+.fade-up-section {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.fade-up-section.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.story-block {
+  text-align: center;
+  max-width: 1000px;
+  margin: 100px auto;
+  padding: 80px 40px;
+  background: linear-gradient(180deg, rgba(26, 34, 40, 0.8) 0%, rgba(26, 34, 40, 0.3) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 32px;
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.story-block::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(var(--primary-rgb), 0.8), transparent);
+}
+
+.story-icon {
+  font-size: 4rem;
+  margin-bottom: 24px;
+  text-shadow: 0 0 30px rgba(var(--primary-rgb), 0.6);
+  animation: float 6s ease-in-out infinite;
+}
+
+.story-block h2 {
+  font-size: 3rem;
+  margin-bottom: 24px;
+  background: linear-gradient(135deg, #ffffff, #a4b5aa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -1px;
+}
+
+.story-lead {
+  font-size: 1.35rem;
+  color: var(--text);
+  line-height: 1.8;
+  margin-bottom: 30px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.story-highlight {
+  display: inline-block;
+  padding: 16px 40px;
+  background: rgba(var(--primary-rgb), 0.1);
+  border: 1px solid rgba(var(--primary-rgb), 0.3);
+  border-radius: 100px;
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 20px 0 30px;
+  box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.15);
+  letter-spacing: -0.5px;
+}
+
+.story-conclusion {
+  font-size: 1.25rem;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.highlight-text {
+  color: var(--primary);
+  font-weight: 600;
+  font-style: italic;
+}
+
 /* Glassmorphic Panel Layout */
 .container {
   max-width: 1480px;
