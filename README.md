@@ -1,8 +1,10 @@
-# E-Commerce Intelligence Research Agent
+# InsightForge – E-Commerce Intelligence Research Agent
 
-Decision-ready research for e-commerce teams using catalog, reviews, pricing, competitors, and performance signals.
+**From Catalogs to Business Decisions**
 
-We built this as a practical research workflow: you give it a brief plus data sources, it returns a structured report you can actually make decisions from. It runs fast for a quick answer or deeper when you need strategy and context.
+Decision-ready research for e-commerce teams. Analyze product catalogs, customer reviews, pricing data, and competitor listings to generate actionable business insights.
+
+Built for product managers, growth teams, and category owners. Give it a brief, upload data or use samples, and get a structured report you can actually act on. Quick mode delivers answers in seconds; deep mode provides comprehensive strategy in minutes.
 
 ## Why this matters
 
