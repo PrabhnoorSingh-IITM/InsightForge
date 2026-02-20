@@ -15,8 +15,11 @@
 </head>
 
 <body>
+  <!-- Custom Cursor Glow -->
+  <div class="cursor-glow" id="cursorGlow"></div>
+
   <!-- Animated Background Orbs -->
-  <div class="bg-orbs">
+  <div class="bg-orbs" id="parallaxBg">
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
     <div class="orb orb-3"></div>
@@ -32,6 +35,13 @@
         </h1>
         <p>Intelligence Platform</p>
       </a>
+
+      <nav class="main-nav" style="display: flex; gap: 24px; font-weight: 500;">
+        <a href="index.html" style="color: var(--primary); text-decoration: none;">Product</a>
+        <a href="about.html" style="color: var(--text); text-decoration: none; opacity: 0.7; transition: opacity 0.3s;"
+          onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.7">The Story</a>
+      </nav>
+
       <div style="display: flex; align-items: center; gap: 20px;">
         <a href="https://github.com/PrabhnoorSingh-IITM/InsightForge" target="_blank" class="github-link"
           title="Source Code">

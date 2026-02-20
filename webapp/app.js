@@ -81,6 +81,22 @@ function initApp() {
     sectionObserver.observe(section);
   });
 
+  // --- Advanced Interactions: Cursor Glow & Parallax ---
+  const cursorGlow = document.getElementById('cursorGlow');
+  if (cursorGlow) {
+    document.addEventListener('mousemove', (e) => {
+      cursorGlow.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
+    });
+  }
+
+  const parallaxBg = document.getElementById('parallaxBg');
+  if (parallaxBg) {
+    window.addEventListener('scroll', () => {
+      const scrollY = window.scrollY;
+      parallaxBg.style.transform = `translateY(${scrollY * 0.2}px)`;
+    });
+  }
+
   setupEventListeners();
   checkAPIHealth();
   console.log("%c✅ InsightForge Ready", "color:#41b883; font-weight:bold; font-size:14px");

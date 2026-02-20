@@ -47,6 +47,25 @@ body {
   filter: blur(80px);
   opacity: 0.5;
   animation: float 20s infinite ease-in-out alternate;
+  transition: transform 0.2s ease-out;
+  /* Smooth parallax */
+}
+
+/* Custom Cursor Glowing Effect */
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(var(--primary-rgb), 0.12) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+  mix-blend-mode: screen;
+  will-change: transform;
 }
 
 .orb-1 {
