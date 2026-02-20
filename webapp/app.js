@@ -1,421 +1,433 @@
 import { CONFIG } from "./config.js";
-import { fetchHealth, fetchAuthStatus, runAnalysis } from "./api.js";
+import { runAnalysis } from "./api.js";
+import {
+  clearAlert,
+  extractMeta,
+  getFormValues,
+  renderReport,
+  setDefaultValues,
+  setLoading,
+  showAlert,
+  showToast,
+  updateBadges,
+  updateChart,
+  updateMappingStatus,
+  updateRecommendations,
+  updateRiskList,
+  updateStatusText,
+} from "./ui.js";
 
-// ============================================================
-// STATE MANAGEMENT
-// ============================================================
-const state = {
-  currentStep: 1,
-  formData: {
-    product: "",
-    marketplace: "",
-    mode: "quick",
-    goal: "growth",
-    dataMode: "sample",
-    files: [],
+const datasetState = {
+  files: [],
+  parsed: {},
+  mapping: {},
+  mode: "sample",
+};
+
+const dataSourceKeys = [
+  "catalog",
+  "reviews",
+  "pricing",
+  "competitors",
+  "performance_signals",
+];
+
+const REQUIRED_HEADERS = {
+  catalog: ["sku", "category", "price"],
+  reviews: ["sku", "rating", "text"],
+  pricing: ["sku", "our_price", "competitor_price"],
+  competitors: ["competitor", "sku", "features"],
+  performance_signals: ["sku", "views", "conversions"],
+};
+
+const COLUMN_ALIASES = {
+  catalog: {
+    sku: ["sku", "product_id", "ProductId", "StockCode", "id"],
+    category: ["category", "Category", "categories"],
+    price: ["price", "UnitPrice", "actual_price", "discounted_price", "Unit_Price_INR"],
+    stock: ["stock", "Quantity"],
+    features: ["features", "about_product", "Description"],
   },
-  apiReady: false,
-  authRequired: false,
+  reviews: {
+    sku: ["sku", "product_id", "ProductId", "asin", "asins"],
+    rating: ["rating", "Score", "reviews.rating"],
+    text: ["text", "review_text", "review_content", "Text", "reviews.text", "Summary"],
+  },
+  pricing: {
+    sku: ["sku", "product_id", "ProductId"],
+    our_price: ["our_price", "discounted_price", "UnitPrice", "Unit_Price_INR"],
+    competitor_price: ["competitor_price", "actual_price", "UnitPrice", "Unit_Price_INR"],
+    competitor: ["competitor", "merchant", "seller"],
+    tier: ["tier"],
+  },
+  competitors: {
+    competitor: ["competitor", "brand", "manufacturer"],
+    sku: ["sku", "competitor_sku", "product_id", "ProductId"],
+    features: ["features", "about_product", "Description"],
+    price: ["price", "UnitPrice", "actual_price", "discounted_price"],
+  },
+  performance_signals: {
+    sku: ["sku", "product_id", "ProductId", "StockCode"],
+    views: ["views", "product_views_per_day", "sessions"],
+    conversions: ["conversions", "purchase_conversion_rate", "Quantity"],
+    returns: ["returns", "return_rate"],
+  },
 };
 
-// ============================================================
-// UI ELEMENTS CACHE
-// ============================================================
-const ui = {
-  // Step buttons
-  step1Btn: document.getElementById("step1Btn"),
-  step2Btn: document.getElementById("step2Btn"),
-  step2Back: document.getElementById("step2Back"),
-  step3Btn: document.getElementById("step3Btn"),
-  step3Back: document.getElementById("step3Back"),
-  step4Btn: document.getElementById("step4Btn"),
-  step4Back: document.getElementById("step4Back"),
-  newAnalysisBtn: document.getElementById("newAnalysisBtn"),
+const fileInput = document.getElementById("fileInput");
+const fileList = document.getElementById("fileList");
+const runBtn = document.getElementById("runBtn");
+const demoBtn = document.getElementById("demoBtn");
+const uploadField = document.getElementById("uploadField");
+const mappingPanel = document.getElementById("mappingPanel");
+const dataModeInputs = document.querySelectorAll("input[name='dataMode']");
 
-  // Form inputs
-  productInput: document.getElementById("productInput"),
-  marketplaceInput: document.getElementById("marketplaceInput"),
-  modeRadios: document.querySelectorAll('input[name="mode"]'),
-  goalRadios: document.querySelectorAll('input[name="goal"]'),
-  dataModeRadios: document.querySelectorAll('input[name="dataMode"]'),
-  fileInput: document.getElementById("fileInput"),
-
-  // Panels
-  steps: document.querySelectorAll(".step"),
-  uploadSection: document.getElementById("uploadSection"),
-  fileList: document.getElementById("fileList"),
-  stepAlert: document.getElementById("stepAlert"),
-  stepStatus: document.getElementById("stepStatus"),
-
-  // Results
-  resultsSection: document.getElementById("resultsSection"),
-  resultsTitle: document.getElementById("resultsTitle"),
-  resultsSubtitle: document.getElementById("resultsSubtitle"),
-  confidenceScore: document.getElementById("confidenceScore"),
-  confidenceBadge: document.getElementById("confidenceBadge"),
-  completenessScore: document.getElementById("completenessScore"),
-  completenessMeter: document.getElementById("completenessMeter"),
-  riskList: document.getElementById("riskList"),
-  recommendations: document.getElementById("recommendations"),
-  report: document.getElementById("report"),
-
-  // Status
-  healthBadge: document.getElementById("healthBadge"),
-  authBadge: document.getElementById("authBadge"),
-  toast: document.getElementById("toast"),
-};
-
-// ============================================================
-// INITIALIZATION
-// ============================================================
-async function init() {
-  setupEventListeners();
-  await checkApiHealth();
-}
-
-async function checkApiHealth() {
-  try {
-    const health = await fetchHealth(CONFIG.API_BASE_URL);
-    state.apiReady = health.status === "ok";
-    updateHealthBadge();
-
-    const authStatus = await fetchAuthStatus(CONFIG.API_BASE_URL);
-    state.authRequired = authStatus.api_key_required;
-    updateAuthBadge();
-  } catch (err) {
-    console.error("Health check failed:", err);
-    state.apiReady = false;
-    updateHealthBadge();
-    showToast("⚠️ API connection failed. Try refreshing.");
+function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (lines.length === 0) {
+    return [];
   }
-}
 
-// ============================================================
-// EVENT LISTENERS
-// ============================================================
-function setupEventListeners() {
-  // Step 1
-  ui.step1Btn.addEventListener("click", handleStep1Next);
+  const headers = parseCsvLine(lines[0]);
+  const rows = [];
 
-  // Step 2
-  ui.step2Btn.addEventListener("click", handleStep2Next);
-  ui.step2Back.addEventListener("click", () => goToStep(1));
-
-  // Step 3
-  ui.step3Btn.addEventListener("click", handleStep3Next);
-  ui.step3Back.addEventListener("click", () => goToStep(2));
-
-  // Step 4
-  ui.step4Btn.addEventListener("click", handleStep4Run);
-  ui.step4Back.addEventListener("click", () => goToStep(3));
-
-  // Form inputs
-  ui.modeRadios.forEach((r) => r.addEventListener("change", (e) => (state.formData.mode = e.target.value)));
-  ui.goalRadios.forEach((r) => r.addEventListener("change", (e) => (state.formData.goal = e.target.value)));
-  
-  ui.dataModeRadios.forEach((r) => {
-    r.addEventListener("change", (e) => {
-      state.formData.dataMode = e.target.value;
-      toggleUploadSection();
+  for (let i = 1; i < lines.length; i += 1) {
+    const values = parseCsvLine(lines[i]);
+    const row = {};
+    headers.forEach((header, index) => {
+      row[header] = values[index] ?? "";
     });
-  });
-
-  ui.fileInput.addEventListener("change", handleFileSelect);
-
-  // Drag and drop
-  const fileInputWrapper = document.querySelector(".file-input-wrapper");
-  if (fileInputWrapper) {
-    fileInputWrapper.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      fileInputWrapper.style.borderColor = "var(--primary)";
-    });
-    fileInputWrapper.addEventListener("dragleave", () => {
-      fileInputWrapper.style.borderColor = "var(--border)";
-    });
-    fileInputWrapper.addEventListener("drop", (e) => {
-      e.preventDefault();
-      fileInputWrapper.style.borderColor = "var(--border)";
-      handleFileSelect({ target: { files: e.dataTransfer.files } });
-    });
+    rows.push(row);
   }
 
-  // Results
-  ui.newAnalysisBtn.addEventListener("click", () => {
-    state.currentStep = 1;
-    state.formData = {
-      product: "",
-      marketplace: "",
-      mode: "quick",
-      goal: "growth",
-      dataMode: "sample",
-      files: [],
-    };
-    goToStep(1);
-    ui.productInput.focus();
-  });
+  return rows;
 }
 
-// ============================================================
-// STEP NAVIGATION
-// ============================================================
-function goToStep(stepNum) {
-  state.currentStep = stepNum;
-  ui.steps.forEach((s) => s.classList.remove("active"));
-  
-  if (stepNum === 1) ui.steps[0].classList.add("active");
-  else if (stepNum === 2) ui.steps[1].classList.add("active");
-  else if (stepNum === 3) ui.steps[2].classList.add("active");
-  else if (stepNum === 4) ui.steps[3].classList.add("active");
-  else if (stepNum === 5) {
-    ui.steps[4].classList.add("active");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }
+function parseCsvLine(line) {
+  const values = [];
+  let current = "";
+  let inQuotes = false;
 
-  clearAlert();
-}
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i];
+    const next = line[i + 1];
 
-function handleStep1Next() {
-  const product = ui.productInput.value.trim();
-  if (!product) {
-    showAlert("Please enter a product name or SKU");
-    return;
-  }
-  state.formData.product = product;
-  state.formData.marketplace = ui.marketplaceInput.value.trim() || "Unknown";
-  goToStep(2);
-}
-
-function handleStep2Next() {
-  goToStep(3);
-}
-
-function handleStep3Next() {
-  goToStep(4);
-}
-
-async function handleStep4Run() {
-  if (!state.apiReady) {
-    showAlert("❌ API is not available. Please try again.");
-    return;
-  }
-
-  if (state.formData.dataMode === "upload" && state.formData.files.length === 0) {
-    showAlert("Please upload at least one CSV file");
-    return;
-  }
-
-  await runAnalysis();
-}
-
-// ============================================================
-// FILE HANDLING
-// ============================================================
-function toggleUploadSection() {
-  if (state.formData.dataMode === "upload") {
-    ui.uploadSection.classList.remove("hidden");
-  } else {
-    ui.uploadSection.classList.add("hidden");
-    state.formData.files = [];
-    ui.fileList.innerHTML = "";
-  }
-}
-
-async function handleFileSelect(e) {
-  const files = Array.from(e.target.files);
-  state.formData.files = files;
-
-  ui.fileList.innerHTML = "";
-  files.forEach((file) => {
-    const item = document.createElement("div");
-    item.className = "file-item";
-    item.innerHTML = `
-      <span>📄 ${file.name}</span>
-      <button onclick="console.log('remove')" style="background:none;border:none;color:var(--text-light);cursor:pointer;">✕</button>
-    `;
-    ui.fileList.appendChild(item);
-  });
-}
-
-// ============================================================
-// API ANALYSIS
-// ============================================================
-async function runAnalysis() {
-  const { product, marketplace, mode, goal, dataMode, files } = state.formData;
-
-  showStatus("⏳ Preparing analysis...");
-  ui.step4Btn.disabled = true;
-
-  try {
-    // Parse files if uploaded
-    let dataSources = {
-      catalog: { path: CONFIG.DEFAULT_SOURCES.catalog },
-      reviews: { path: CONFIG.DEFAULT_SOURCES.reviews },
-      pricing: { path: CONFIG.DEFAULT_SOURCES.pricing },
-      competitors: { path: CONFIG.DEFAULT_SOURCES.competitors },
-      performance_signals: { path: CONFIG.DEFAULT_SOURCES.performance_signals },
-    };
-
-    if (dataMode === "upload" && files.length > 0) {
-      let fileData = {};
-      for (const file of files) {
-        const content = await file.text();
-        const rows = content.split("\n").map((line) => {
-          const values = line.split(",");
-          return values;
-        });
-        const headers = rows[0];
-        const data = rows.slice(1).map((row) => {
-          const obj = {};
-          headers.forEach((h, i) => {
-            obj[h.trim()] = row[i];
-          });
-          return obj;
-        });
-        fileData[file.name.replace(".csv", "")] = data;
-      }
-      dataSources = {
-        catalog: fileData.catalog || dataSources.catalog,
-        reviews: fileData.reviews || dataSources.reviews,
-        pricing: fileData.pricing || dataSources.pricing,
-        competitors: fileData.competitors || dataSources.competitors,
-        performance_signals: fileData.performance || dataSources.performance_signals,
-      };
+    if (char === '"' && inQuotes && next === '"') {
+      current += '"';
+      i += 1;
+      continue;
     }
 
-    const brief = {
-      mode,
-      business_goal: goal,
-      scope: {
-        type: "Product",
-        value: product,
-      },
-      marketplaces: [marketplace],
-      region: "Unknown",
-      timeframe: "Latest",
-      data_sources: dataSources,
-    };
+    if (char === '"') {
+      inQuotes = !inQuotes;
+      continue;
+    }
 
-    showStatus("🔄 Running analysis...");
+    if (char === "," && !inQuotes) {
+      values.push(current);
+      current = "";
+      continue;
+    }
 
-    const result = await runAnalysis(brief, null);
-
-    showResults(result, product, mode);
-  } catch (err) {
-    console.error("Analysis error:", err);
-    showAlert(`❌ ${err.message}`);
-  } finally {
-    ui.step4Btn.disabled = false;
-    clearStatus();
+    current += char;
   }
+
+  values.push(current);
+  return values.map((value) => value.trim());
 }
 
-// ============================================================
-// RESULTS DISPLAY
-// ============================================================
-function showResults(result, product, mode) {
-  ui.resultsTitle.textContent = `✨ Analysis Complete`;
-  ui.resultsSubtitle.textContent = `${product} • ${mode === "quick" ? "Quick" : "Deep"} Analysis`;
+function addFileCard(file) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "file-card";
 
-  // Update metrics
-  const confidenceMatch = result.report.match(/Confidence Score:\s*(\d+)%/i);
-  const completenessMatch = result.report.match(/Data Completeness.*?:\s*(\d+)%/i);
+  const name = document.createElement("div");
+  name.textContent = file.name;
 
-  if (confidenceMatch) {
-    const confidence = parseInt(confidenceMatch[1]);
-    ui.confidenceScore.textContent = `${confidence}%`;
-    ui.confidenceBadge.textContent = confidence >= 75 ? "High" : confidence >= 50 ? "Medium" : "Low";
-  }
+  const warning = document.createElement("div");
+  warning.className = "file-warning";
 
-  if (completenessMatch) {
-    const completeness = parseInt(completenessMatch[1]);
-    ui.completenessScore.textContent = `${completeness}%`;
-    ui.completenessMeter.style.width = `${completeness}%`;
-  }
+  const select = document.createElement("select");
+  const defaultOption = document.createElement("option");
+  defaultOption.value = "";
+  defaultOption.textContent = "Map dataset";
+  select.appendChild(defaultOption);
 
-  // Extract risks and recommendations
-  const riskMatch = result.report.match(/Risk Flags?\s*[:\-]?\s*([\s\S]*?)(?:Strategic|Recommendations|$)/i);
-  const recMatch = result.report.match(/(?:Strategic )?Recommendations?\s*[:\-]?\s*([\s\S]*?)(?:Full Report|$)/i);
-
-  if (riskMatch) {
-    const risks = riskMatch[1].split("\n").filter((r) => r.trim());
-    ui.riskList.innerHTML = risks.map((r) => `<li>${r.trim()}</li>`).join("");
-  }
-
-  if (recMatch) {
-    const recs = recMatch[1].split("\n").filter((r) => r.trim());
-    ui.recommendations.innerHTML = recs.map((r) => `<li>${r.trim()}</li>`).join("");
-  }
-
-  // Full report
-  ui.report.innerHTML = window.marked.parse(result.report || "");
-
-  goToStep(5);
-  showToast("✅ Analysis complete!");
-}
-
-// ============================================================
-// API FUNCTION (imported version)
-// ============================================================
-async function runAnalysis(brief, apiKey) {
-  const headers = { "Content-Type": "application/json" };
-  if (apiKey) {
-    headers["x-api-key"] = apiKey;
-  }
-
-  const response = await fetch(`${CONFIG.API_BASE_URL}/analyze`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify({ brief }),
+  dataSourceKeys.forEach((key) => {
+    const option = document.createElement("option");
+    option.value = key;
+    option.textContent = key.replace(/_/g, " ");
+    select.appendChild(option);
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || "Analysis failed");
+  select.addEventListener("change", () => {
+    datasetState.mapping[select.value] = file.name;
+    updateMappingStatus(datasetState.mapping);
+    normalizeAndValidate(select.value, file.name, warning);
+  });
+
+  wrapper.appendChild(name);
+  wrapper.appendChild(warning);
+  wrapper.appendChild(select);
+  fileList.appendChild(wrapper);
+}
+
+async function handleFiles(files) {
+  if (datasetState.mode !== "upload") {
+    return;
+  }
+  datasetState.files = Array.from(files);
+  datasetState.parsed = {};
+  datasetState.mapping = {};
+  fileList.innerHTML = "";
+
+  for (const file of datasetState.files) {
+    addFileCard(file);
+    const text = await file.text();
+    datasetState.parsed[file.name] = parseCsv(text);
   }
 
-  return response.json();
+  updateMappingStatus(datasetState.mapping);
 }
 
-// ============================================================
-// UI HELPERS
-// ============================================================
-function showAlert(msg) {
-  ui.stepAlert.textContent = msg;
-  ui.stepAlert.classList.remove("hidden");
+function validateMappingSchema(mappedKey, fileName, warningEl) {
+  if (!mappedKey || !fileName) {
+    warningEl.textContent = "";
+    return;
+  }
+
+  const rows = datasetState.parsed[fileName] || [];
+  if (rows.length === 0) {
+    warningEl.textContent = "File has no rows to validate.";
+    return;
+  }
+
+  const headers = Object.keys(rows[0]);
+  const required = REQUIRED_HEADERS[mappedKey] || [];
+  const missing = required.filter((col) => !headers.includes(col));
+
+  if (missing.length > 0) {
+    warningEl.textContent = `Missing columns for ${mappedKey}: ${missing.join(", ")}`;
+  } else {
+    warningEl.textContent = "";
+  }
 }
 
-function clearAlert() {
-  ui.stepAlert.classList.add("hidden");
-  ui.stepAlert.textContent = "";
+function normalizeAndValidate(mappedKey, fileName, warningEl) {
+  const rows = datasetState.parsed[fileName] || [];
+  if (!rows.length) {
+    validateMappingSchema(mappedKey, fileName, warningEl);
+    return;
+  }
+
+  const normalized = normalizeRows(rows, mappedKey);
+  datasetState.parsed[fileName] = normalized;
+  validateMappingSchema(mappedKey, fileName, warningEl);
 }
 
-function showStatus(msg) {
-  ui.stepStatus.textContent = msg;
-  ui.stepStatus.classList.add("loading");
+function normalizeRows(rows, mappedKey) {
+  const aliases = COLUMN_ALIASES[mappedKey] || {};
+  if (!Object.keys(aliases).length) {
+    return rows;
+  }
+
+  return rows.map((row) => {
+    const normalized = { ...row };
+    Object.entries(aliases).forEach(([target, candidates]) => {
+      if (normalized[target] !== undefined) {
+        return;
+      }
+      const match = candidates.find((candidate) => row[candidate] !== undefined);
+      if (match) {
+        normalized[target] = row[match];
+      }
+    });
+    return normalized;
+  });
 }
 
-function clearStatus() {
-  ui.stepStatus.textContent = "";
-  ui.stepStatus.classList.remove("loading");
+function buildDataSources() {
+  if (datasetState.mode === "sample") {
+    return { ...CONFIG.DEFAULT_SOURCES };
+  }
+
+  const dataSources = {};
+
+  dataSourceKeys.forEach((key) => {
+    const mappedFile = datasetState.mapping[key];
+    if (mappedFile) {
+      dataSources[key] = datasetState.parsed[mappedFile] || [];
+    } else {
+      dataSources[key] = CONFIG.DEFAULT_SOURCES[key];
+    }
+  });
+
+  return dataSources;
 }
 
-function showToast(msg) {
-  ui.toast.textContent = msg;
-  ui.toast.classList.add("show");
-  setTimeout(() => ui.toast.classList.remove("show"), 3000);
+function validateInputs(values, dataSources) {
+  clearFieldErrors();
+  const errors = [];
+
+  if (!values.mode) {
+    setFieldError("mode", "modeError", "Select a mode.");
+    errors.push("Mode is required.");
+  }
+
+  if (!values.goal) {
+    setFieldError("goal", "goalError", "Select a business goal.");
+    errors.push("Business goal is required.");
+  }
+
+  if (!values.scopeValue) {
+    setFieldError("scopeValue", "scopeValueError", "Scope value is required.");
+    errors.push("Scope value is required (SKU or Category). ");
+  }
+
+  if (!values.apiBaseUrl) {
+    setFieldError("apiBaseUrl", "apiBaseUrlError", "API base URL is required.");
+    errors.push("API base URL is required.");
+  }
+
+  if (datasetState.mode === "upload") {
+    const missingSources = dataSourceKeys.filter((key) => dataSources[key] === undefined);
+    if (missingSources.length > 0) {
+      errors.push(`Missing data sources: ${missingSources.join(", ")}.`);
+    }
+
+    const emptySources = dataSourceKeys.filter((key) => Array.isArray(dataSources[key]) && dataSources[key].length === 0);
+    if (emptySources.length > 0) {
+      errors.push(`Uploaded datasets are empty: ${emptySources.join(", ")}.`);
+    }
+  }
+
+  if (errors.length > 0) {
+    showAlert(errors.join(" "));
+    return false;
+  }
+
+  return true;
 }
 
-function updateHealthBadge() {
-  ui.healthBadge.textContent = state.apiReady ? "API: online" : "API: offline";
-  ui.healthBadge.className = `badge ${state.apiReady ? "badge-good" : "badge-bad"}`;
+function setFieldError(inputId, errorId, message) {
+  const input = document.getElementById(inputId);
+  const error = document.getElementById(errorId);
+  if (input) {
+    input.classList.add("input-error");
+  }
+  if (error) {
+    error.textContent = message;
+  }
 }
 
-function updateAuthBadge() {
-  ui.authBadge.textContent = state.authRequired ? "Auth: required" : "Auth: open";
-  ui.authBadge.className = `badge ${state.authRequired ? "badge-warn" : "badge-good"}`;
+function clearFieldErrors() {
+  const fields = [
+    { input: "mode", error: "modeError" },
+    { input: "goal", error: "goalError" },
+    { input: "scopeValue", error: "scopeValueError" },
+    { input: "apiBaseUrl", error: "apiBaseUrlError" },
+  ];
+
+  fields.forEach(({ input, error }) => {
+    const inputEl = document.getElementById(input);
+    const errorEl = document.getElementById(error);
+    if (inputEl) {
+      inputEl.classList.remove("input-error");
+    }
+    if (errorEl) {
+      errorEl.textContent = "";
+    }
+  });
 }
 
-// ============================================================
-// START
-// ============================================================
+async function run() {
+  clearAlert();
+  updateStatusText("Running analysis...");
+  setLoading(true);
+
+  const values = getFormValues();
+  const dataSources = buildDataSources();
+
+  if (!validateInputs(values, dataSources)) {
+    setLoading(false);
+    updateStatusText("Fix issues and retry.");
+    return;
+  }
+
+  const payload = {
+    brief: {
+      mode: values.mode,
+      business_goal: values.goal,
+      marketplaces: values.marketplace ? [values.marketplace] : [],
+      region: values.region || "Unknown",
+      timeframe: values.timeframe || "Unspecified",
+      scope: {
+        type: values.scopeType,
+        value: values.scopeValue,
+      },
+      constraints: values.constraints,
+      data_sources: dataSources,
+    },
+    update_memory: true,
+  };
+
+  try {
+    const response = await runAnalysis(payload);
+    renderReport(response.report);
+
+    const meta = extractMeta(response.report);
+    updateBadges(meta);
+    updateChart(meta.confidence ?? 0);
+    updateRiskList(response.report);
+    updateRecommendations(response.report);
+
+    updateStatusText("Report ready.");
+    showToast("Report loaded successfully.");
+  } catch (error) {
+    showAlert(error.message);
+    updateStatusText("Failed to run analysis.");
+  } finally {
+    setLoading(false);
+  }
+}
+
+async function init() {
+  setDefaultValues();
+  updateMappingStatus(datasetState.mapping);
+  setDataMode(getSelectedDataMode());
+}
+
+function getSelectedDataMode() {
+  const selected = Array.from(dataModeInputs).find((input) => input.checked);
+  return selected ? selected.value : "sample";
+}
+
+function setDataMode(mode) {
+  datasetState.mode = mode;
+  const showUploads = mode === "upload";
+  uploadField.classList.toggle("hidden", !showUploads);
+  fileList.classList.toggle("hidden", !showUploads);
+  mappingPanel.classList.toggle("hidden", !showUploads);
+
+  if (!showUploads) {
+    datasetState.mapping = {};
+    updateMappingStatus(datasetState.mapping);
+  }
+}
+
+fileInput.addEventListener("change", (event) => handleFiles(event.target.files));
+runBtn.addEventListener("click", run);
+demoBtn.addEventListener("click", () => {
+  setDefaultValues();
+  updateStatusText("Demo values loaded.");
+});
+dataModeInputs.forEach((input) => {
+  input.addEventListener("change", () => setDataMode(getSelectedDataMode()));
+});
+
+document.getElementById("startTourBtn").addEventListener("click", () => {
+  const dashboardSection = document.querySelector(".grid");
+  dashboardSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  setTimeout(() => setDefaultValues(), 600);
+});
+
 init();

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsightForge - E-Commerce Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">
+          <h1>InsightForge</h1>
+          <p class="tagline">Smart e-commerce analysis in minutes</p>
+        </div>
+        <div class="status-badges">
+          <span id="healthBadge" class="badge badge-muted">API: checking...</span>
+          <span id="authBadge" class="badge badge-muted">Auth: open</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container">
+      <!-- Step 1: Welcome -->
+      <section id="step1" class="step active">
+        <div class="step-card">
+          <h2>What would you like to analyze?</h2>
+          <p class="step-desc">Tell us about a product or category you want insights on.</p>
+          
+          <div class="form-group">
+            <label>Product Name or SKU</label>
+            <input 
+              id="productInput" 
+              type="text" 
+              placeholder="e.g., Bluetooth Earbuds or SKU-472"
+              class="input-large"
+            />
+            <small class="help-text">What product or category are you interested in?</small>
+          </div>
+
+          <div class="form-group">
+            <label>Where do you sell?</label>
+            <input 
+              id="marketplaceInput" 
+              type="text" 
+              placeholder="e.g., Amazon"
+              class="input-medium"
+            />
+            <small class="help-text">Optional: Amazon, Flipkart, Shopify, etc.</small>
+          </div>
+
+          <button id="step1Btn" class="btn btn-primary btn-lg">Next: Choose Analysis Type</button>
+        </div>
+      </section>
+
+      <!-- Step 2: Analysis Type -->
+      <section id="step2" class="step">
+        <div class="step-card">
+          <h2>How deep do you want to go?</h2>
+          <p class="step-desc">Quick analysis is fast. Deep analysis is thorough.</p>
+          
+          <div class="option-grid">
+            <label class="option-card">
+              <input type="radio" name="mode" value="quick" checked />
+              <div class="option-content">
+                <h3>⚡ Quick Analysis</h3>
+                <p>~2 minutes</p>
+                <ul class="option-list">
+                  <li>Top customer complaints</li>
+                  <li>Price comparison</li>
+                  <li>Key insights</li>
+                </ul>
+              </div>
+            </label>
+            
+            <label class="option-card">
+              <input type="radio" name="mode" value="deep" />
+              <div class="option-content">
+                <h3>🔍 Deep Dive</h3>
+                <p>~10 minutes</p>
+                <ul class="option-list">
+                  <li>Full market analysis</li>
+                  <li>Competitor gaps</li>
+                  <li>Demand trends</li>
+                  <li>Strategic recommendations</li>
+                </ul>
+              </div>
+            </label>
+          </div>
+
+          <div class="button-group">
+            <button id="step2Back" class="btn btn-ghost">← Back</button>
+            <button id="step2Btn" class="btn btn-primary">Next: Pick Your Goal</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Business Goal -->
+      <section id="step3" class="step">
+        <div class="step-card">
+          <h2>What's your main goal?</h2>
+          <p class="step-desc">What matters most to your business right now?</p>
+          
+          <div class="option-grid">
+            <label class="option-card">
+              <input type="radio" name="goal" value="growth" checked />
+              <div class="option-content">
+                <h3>📈 Growth</h3>
+                <p>Increase sales and market share</p>
+              </div>
+            </label>
+            
+            <label class="option-card">
+              <input type="radio" name="goal" value="profitability" />
+              <div class="option-content">
+                <h3>💰 Profitability</h3>
+                <p>Improve margins and efficiency</p>
+              </div>
+            </label>
+            
+            <label class="option-card">
+              <input type="radio" name="goal" value="retention" />
+              <div class="option-content">
+                <h3>❤️ Retention</h3>
+                <p>Keep customers happy and loyal</p>
+              </div>
+            </label>
+            
+            <label class="option-card">
+              <input type="radio" name="goal" value="market expansion" />
+              <div class="option-content">
+                <h3>🌍 Expansion</h3>
+                <p>Enter new markets or categories</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="button-group">
+            <button id="step3Back" class="btn btn-ghost">← Back</button>
+            <button id="step3Btn" class="btn btn-primary">Next: Choose Your Data</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Data Source -->
+      <section id="step4" class="step">
+        <div class="step-card">
+          <h2>Where's your data?</h2>
+          <p class="step-desc">You can use sample data to try it out, or upload your own.</p>
+          
+          <div class="option-grid">
+            <label class="option-card">
+              <input type="radio" name="dataMode" value="sample" checked />
+              <div class="option-content">
+                <h3>📊 Use Sample Data</h3>
+                <p>Pre-loaded e-commerce datasets</p>
+                <p class="small">Perfect for testing</p>
+              </div>
+            </label>
+            
+            <label class="option-card">
+              <input type="radio" name="dataMode" value="upload" />
+              <div class="option-content">
+                <h3>📁 Upload Your CSVs</h3>
+                <p>Your own datasets</p>
+                <p class="small">Catalog, reviews, pricing, etc.</p>
+              </div>
+            </label>
+          </div>
+
+          <!-- File Upload (hidden by default) -->
+          <div id="uploadSection" class="upload-section hidden">
+            <div class="form-group">
+              <label>Upload CSV Files</label>
+              <div class="file-input-wrapper">
+                <input id="fileInput" type="file" accept=".csv" multiple />
+                <div class="file-input-label">
+                  <p>📁 Click to select files or drag and drop</p>
+                  <small>CSV format: catalog, reviews, pricing, competitors, performance</small>
+                </div>
+              </div>
+              <div id="fileList" class="file-list"></div>
+            </div>
+          </div>
+
+          <div class="button-group">
+            <button id="step4Back" class="btn btn-ghost">← Back</button>
+            <button id="step4Btn" class="btn btn-primary btn-lg">🚀 Run Analysis</button>
+          </div>
+
+          <div id="stepAlert" class="alert hidden"></div>
+          <div id="stepStatus" class="status-text"></div>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section id="resultsSection" class="step">
+        <div class="results-container">
+          <!-- Header -->
+          <div class="results-header">
+            <div>
+              <h2 id="resultsTitle">Your Analysis</h2>
+              <p id="resultsSubtitle" class="results-meta"></p>
+            </div>
+            <button id="newAnalysisBtn" class="btn btn-ghost">← Start Over</button>
+          </div>
+
+          <!-- Metrics -->
+          <div class="metrics-row">
+            <div class="metric-card">
+              <p class="metric-label">Confidence</p>
+              <p id="confidenceScore" class="metric-value">--</p>
+              <span id="confidenceBadge" class="badge"></span>
+            </div>
+            <div class="metric-card">
+              <p class="metric-label">Data Quality</p>
+              <p id="completenessScore" class="metric-value">--</p>
+              <div class="meter">
+                <div id="completenessMeter" class="meter-progress" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Risk Flags -->
+          <div class="result-section">
+            <h3>⚠️ Key Risks</h3>
+            <ul id="riskList" class="result-list"></ul>
+          </div>
+
+          <!-- Recommendations -->
+          <div class="result-section">
+            <h3>💡 Recommendations</h3>
+            <ul id="recommendations" class="result-list"></ul>
+          </div>
+
+          <!-- Full Report -->
+          <div class="result-section">
+            <h3>📋 Full Report</h3>
+            <div id="report" class="report-content"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
+  </body>
+</html>
