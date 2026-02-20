@@ -54,13 +54,33 @@ const toast = getElement("toast");
 
 function initApp() {
   console.log("%c🔥 InsightForge Initializing...", "color:#41b883; font-weight:bold; font-size:14px");
-  
+
   // Check if essential elements exist
   if (!startBtn) {
     console.error("❌ CRITICAL: startBtn not found. HTML structure may be broken.");
     return;
   }
-  
+
+  // --- Intersection Observer for Storytelling Fade-ins ---
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px',
+    threshold: 0.15
+  };
+
+  const sectionObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade-up-section').forEach(section => {
+    sectionObserver.observe(section);
+  });
+
   setupEventListeners();
   checkAPIHealth();
   console.log("%c✅ InsightForge Ready", "color:#41b883; font-weight:bold; font-size:14px");
@@ -68,44 +88,44 @@ function initApp() {
 
 function setupEventListeners() {
   console.log("📍 Setting up event listeners...");
-  
+
   // Start button - PRIMARY
   if (startBtn) {
-    startBtn.addEventListener("click", function(e) {
+    startBtn.addEventListener("click", function (e) {
       console.log("✓ Start button clicked!");
       e.preventDefault();
       e.stopPropagation();
       showDashboard();
     });
   }
-  
+
   // Run analysis button
   if (runBtn) {
-    runBtn.addEventListener("click", function(e) {
+    runBtn.addEventListener("click", function (e) {
       console.log("✓ Run analysis clicked!");
       e.preventDefault();
       handleRunAnalysis();
     });
   }
-  
+
   // Demo button
   if (demoBtn) {
-    demoBtn.addEventListener("click", function(e) {
+    demoBtn.addEventListener("click", function (e) {
       console.log("✓ Demo button clicked!");
       e.preventDefault();
       handleDemoData();
     });
   }
-  
+
   // New analysis button
   if (newAnalysisBtn) {
-    newAnalysisBtn.addEventListener("click", function(e) {
+    newAnalysisBtn.addEventListener("click", function (e) {
       console.log("✓ New analysis clicked!");
       e.preventDefault();
       resetToDashboard();
     });
   }
-  
+
   // Mode radio buttons
   const modeInputs = document.querySelectorAll('input[name="mode"]');
   modeInputs.forEach(input => {
@@ -116,7 +136,7 @@ function setupEventListeners() {
       }
     });
   });
-  
+
   // Data mode toggle
   const dataModeInputs = document.querySelectorAll('input[name="dataMode"]');
   dataModeInputs.forEach(input => {
@@ -126,7 +146,7 @@ function setupEventListeners() {
       }
     });
   });
-  
+
   // File upload
   if (fileDropZone && fileInput) {
     fileDropZone.addEventListener("click", () => fileInput.click());
@@ -147,7 +167,7 @@ function setupEventListeners() {
     });
     fileInput.addEventListener("change", (e) => handleFiles(e.target.files));
   }
-  
+
   console.log("✅ Event listeners ready");
 }
 
@@ -169,13 +189,13 @@ function showDashboard() {
 
 function resetToDashboard() {
   console.log("🔄 Resetting dashboard");
-  
+
   if (productInput) productInput.value = "";
   if (marketplace) marketplace.value = "";
   if (region) region.value = "";
   if (fileList) fileList.innerHTML = "";
   appState.uploadedFiles = [];
-  
+
   if (newAnalysisBtn) newAnalysisBtn.style.display = "none";
   if (riskList) riskList.innerHTML = '<li class="placeholder">Run analysis to see risks</li>';
   if (recommendations) recommendations.innerHTML = '<li class="placeholder">Run analysis to get recommendations</li>';
@@ -184,7 +204,7 @@ function resetToDashboard() {
   if (completenessScore) completenessScore.textContent = "--";
   if (completenessMeter) completenessMeter.style.width = "0%";
   if (confidenceBadge) confidenceBadge.textContent = "--";
-  
+
   scrollToTop();
 }
 
@@ -207,7 +227,7 @@ async function checkAPIHealth() {
     });
     const data = await response.json();
     console.log("✅ API OK:", data);
-    
+
     const healthBadge = getElement("healthBadge");
     if (healthBadge) {
       healthBadge.textContent = "🟢 API";
@@ -249,14 +269,14 @@ function displayFileList() {
 
 async function handleDemoData() {
   console.log("🎬 Running demo...");
-  
+
   if (productInput) productInput.value = "Bluetooth Earbuds";
   if (marketplace) marketplace.value = "Amazon";
   if (region) region.value = "India";
-  
+
   setStatus("Loading sample analysis...");
   setLoading(true);
-  
+
   try {
     const brief = {
       product_name: "Bluetooth Earbuds",
@@ -267,7 +287,7 @@ async function handleDemoData() {
       marketplace: "Amazon",
       region: "India"
     };
-    
+
     const result = await callAPI(brief);
     displayResults(result);
     setStatus("✅ Demo complete!");
@@ -285,16 +305,16 @@ async function handleDemoData() {
 
 async function handleRunAnalysis() {
   console.log("🔍 Running analysis...");
-  
+
   if (!productInput?.value?.trim()) {
     showToast("Please enter a product name", "error");
     return;
   }
-  
+
   setStatus("Running analysis...");
   setLoading(true);
   appState.analysisRunning = true;
-  
+
   try {
     const brief = {
       product_name: productInput.value.trim(),
@@ -305,9 +325,16 @@ async function handleRunAnalysis() {
       marketplace: marketplace?.value || "Amazon",
       region: region?.value || "Global"
     };
-    
+
     console.log("📤 Analysis request:", brief);
-    const result = await callAPI(brief);
+    const apiPayload = {
+      brief: brief,
+      update_memory: false,
+      memory_path: "data/domain_memory.json",
+      source_base_dir: "examples",
+      output_path: "out/api_report.md"
+    };
+    const result = await callAPI(apiPayload);
     displayResults(result);
     setStatus("✅ Analysis complete!");
     showToast("✅ Analysis complete!", "success");
@@ -334,12 +361,12 @@ async function callAPI(brief) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(brief),
   });
-  
+
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
     throw new Error(error.detail || `API Error: ${response.status}`);
   }
-  
+
   return response.json();
 }
 
@@ -349,55 +376,57 @@ async function callAPI(brief) {
 
 function displayResults(result) {
   console.log("📊 Displaying results...");
-  
+
   if (confidenceScore) confidenceScore.textContent = Math.round((result.confidence_score || 0.75) * 100) + "%";
   if (completenessScore) completenessScore.textContent = Math.round((result.data_completeness || 0.8) * 100) + "%";
   if (completenessMeter) completenessMeter.style.width = ((result.data_completeness || 0.8) * 100) + "%";
-  
+
   if (confidenceBadge) {
     const conf = result.confidence_score || 0.75;
     confidenceBadge.textContent = conf >= 0.8 ? "High" : conf >= 0.5 ? "Medium" : "Low";
   }
-  
+
   if (riskList && result.risks?.length) {
     riskList.innerHTML = result.risks.slice(0, 5).map(r => `<li>${r}</li>`).join("");
   }
-  
+
   if (recommendations && result.recommendations?.length) {
     recommendations.innerHTML = result.recommendations.slice(0, 5).map(r => `<li>${r}</li>`).join("");
   }
-  
-  if (report && result.report?.length) {
+
+  if (report && result.report) {
     try {
-      report.innerHTML = marked.parse(result.report.join("\n"));
+      const reportContent = Array.isArray(result.report) ? result.report.join("\n") : result.report;
+      report.innerHTML = marked.parse(reportContent);
     } catch (e) {
-      report.textContent = result.report.join("\n");
+      const reportContent = Array.isArray(result.report) ? result.report.join("\n") : result.report;
+      report.textContent = reportContent;
     }
   }
 }
 
 function displayMockResults() {
   console.log("🎭 Showing mock results...");
-  
+
   if (confidenceScore) confidenceScore.textContent = "78%";
   if (completenessScore) completenessScore.textContent = "85%";
   if (completenessMeter) completenessMeter.style.width = "85%";
   if (confidenceBadge) confidenceBadge.textContent = "High";
-  
+
   if (riskList) riskList.innerHTML = `
     <li>⚠️ High market competition</li>
     <li>📉 Below-average customer ratings</li>
     <li>💰 Pricing above competitors</li>
     <li>📦 Inventory constraints</li>
   `;
-  
+
   if (recommendations) recommendations.innerHTML = `
     <li>💡 Reduce price by 10% to be competitive</li>
     <li>⭐ Improve product quality for better ratings</li>
     <li>📢 Invest in customer testimonials</li>
     <li>🚀 Launch seasonal campaigns</li>
   `;
-  
+
   if (report) report.innerHTML = `
     <h4>📋 Analysis Report (Demo Data)</h4>
     <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>

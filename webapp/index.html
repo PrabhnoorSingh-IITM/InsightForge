@@ -1,26 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>InsightForge - E-Commerce Intelligence Research Agent</title>
+  <title>InsightForge - E-Commerce Intelligence</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
+
 <body>
+  <!-- Animated Background Orbs -->
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
   <!-- Navigation Header -->
   <header class="header">
     <div class="header-inner">
-      <div class="brand">
-        <h1>🔥 InsightForge</h1>
-        <p>E-Commerce Intelligence</p>
-      </div>
-      <div class="status-badges">
-        <span id="healthBadge" class="badge badge-loading">🟡 API</span>
-        <span id="authBadge" class="badge badge-loading">🟡 Auth</span>
+      <a href="index.html" class="brand" style="text-decoration: none;">
+        <h1>
+          <span>⚡</span>
+          InsightForge
+        </h1>
+        <p>Intelligence Platform</p>
+      </a>
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <a href="https://github.com/PrabhnoorSingh-IITM/InsightForge" target="_blank" class="github-link"
+          title="Source Code">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+        </a>
+        <div class="status-badges">
+          <span id="healthBadge" class="badge">🟢 System</span>
+          <span id="authBadge" class="badge">🟢 Auth</span>
+        </div>
       </div>
     </div>
   </header>
@@ -30,56 +53,85 @@
     <div class="hero-inner">
       <!-- Hero Header -->
       <div class="hero-header">
-        <p class="hero-tagline">🚀 RESEARCH MADE SIMPLE</p>
-        <h1 class="hero-title">E-Commerce Intelligence Agent</h1>
-        <p class="hero-subtitle">Analyze your products in minutes. Get actionable insights backed by data.</p>
-        <p class="hero-description">Upload your datasets or use our samples. Our agent finds gaps, flags risks, and gives you strategies.</p>
+        <div class="hero-tagline">AI Research Agent</div>
+        <h1 class="hero-title">
+          Scale Your E-Commerce <br />
+          Strategy with Data
+        </h1>
+        <p class="hero-description">
+          Stop guessing. Our AI agent analyzes market gaps, competitor data, and customer sentiment to build a winning
+          roadmap for your product.
+        </p>
+      </div>
+
+      <!-- Arrow Down / Transition -->
+      <div style="margin-bottom: 40px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2">
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+        </svg>
       </div>
 
       <!-- 3 Steps Cards -->
       <div class="steps-grid">
         <div class="step-card">
-          <div class="step-number">1</div>
-          <h3>Tell Us Your Goal</h3>
-          <p>Pick "Quick" for fast answers or "Deep" for comprehensive strategy. Choose what matters to you: growth, retention, profitability, or market expansion.</p>
+          <div class="step-number">01</div>
+          <h3>Define Goal</h3>
+          <p>Choose "Quick" for instant checks or "Deep" for comprehensive strategy. Target growth, retention, or
+            profitability.</p>
         </div>
         <div class="step-card highlight">
-          <div class="step-number">2</div>
-          <h3>Choose Your Data</h3>
-          <p>Use our built-in sample datasets for instant results, or upload your own CSVs. Our system auto-detects and maps your data.</p>
+          <div class="step-number">02</div>
+          <h3>Connect Data</h3>
+          <p>Upload your CSVs or use our validated market datasets. The system automatically maps and cleans your data.
+          </p>
         </div>
         <div class="step-card">
-          <div class="step-number">3</div>
-          <h3>Get Smart Insights</h3>
-          <p>Receive a structured report with confidence scores, risk flags, and actionable recommendations. All in plain language.</p>
+          <div class="step-number">03</div>
+          <h3>Unlock Insights</h3>
+          <p>Get a strategic report with confidence scores, risk factors, and clear action items—generated in seconds.
+          </p>
         </div>
       </div>
 
       <!-- CTA Button -->
-      <button class="btn btn-primary btn-hero" id="startBtn">
-        <span class="btn-icon">→</span>
-        <span class="btn-text">Start Your Analysis</span>
-      </button>
+      <div style="margin-top: 60px;">
+        <button class="btn-hero" id="startBtn">
+          <span>Start Research Analysis</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </div>
 
       <!-- Preview Section -->
       <div class="hero-preview">
-        <div class="preview-label">Preview of the analysis dashboard:</div>
+        <div class="preview-label">Live System Preview</div>
         <div class="preview-grid">
           <div class="preview-card">
-            <h4>Analysis Setup</h4>
-            <p>What to analyze and how</p>
+            <h4>Analysis Engine</h4>
+            <p>Ready</p>
           </div>
           <div class="preview-card">
-            <h4>Data Sources</h4>
-            <p>Use sample or upload CSVs</p>
+            <h4>Data Pipeline</h4>
+            <p>Active</p>
           </div>
           <div class="preview-card">
-            <h4>Research Output</h4>
-            <p>Insights, metrics, recommendations</p>
+            <h4>Market Signals</h4>
+            <p>Tracking</p>
           </div>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- Storytelling Narrative Section -->
+  <section class="story-block fade-up-section">
+    <h2>The Ecommerce Gap</h2>
+    <p>
+      You have reviews on Amazon, catalog data in Shopify, pricing in a spreadsheet,
+      and competitor listings in a web scraper. Most dashboards just show you up-and-down charts.
+      <strong>InsightForge changes the paradigm.</strong> We read the messy, multi-source data to
+      generate clear, tactical business reports. It’s not just reporting metrics—it’s answering <i>"What do we do
+        next?"</i>.
+    </p>
   </section>
 
   <!-- Main Dashboard -->
@@ -291,7 +343,8 @@
         </div>
 
         <!-- Start Over Button -->
-        <button class="btn btn-secondary btn-block" id="newAnalysisBtn" style="display: none;">← Start New Analysis</button>
+        <button class="btn btn-secondary btn-block" id="newAnalysisBtn" style="display: none;">← Start New
+          Analysis</button>
       </section>
     </div>
   </main>
@@ -309,4 +362,5 @@
   <script type="module" src="api.js"></script>
   <script type="module" src="app.js"></script>
 </body>
+
 </html>

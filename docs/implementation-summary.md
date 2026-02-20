@@ -40,6 +40,7 @@ The final delivered system is an **API-first research backend** with a standalon
 11. Switched defaults to processed Kaggle paths.
 12. Added Research Console webapp with CSV upload, mapping, and report rendering.
 13. Updated documentation to include UI + API usage.
+14. **major UI Overhaul**: Replaced basic frontend with a "Premium Deep Space" design system featuring glassmorphism, complex animations, and responsive layouts.
 
 ---
 
@@ -107,8 +108,11 @@ The final delivered system is an **API-first research backend** with a standalon
 
 ### Webapp
 - `webapp/index.html`
+  - Hero steps, responsive dashboard layout, preview cards.
 - `webapp/styles.css`
+  - **Premium Design System**: Root variables, custom gradients, backdrop-filters, animations.
 - `webapp/app.js`
+  - State management, form handling, API integration.
 - `webapp/api.js`
 - `webapp/ui.js`
 - `webapp/config.js`
@@ -311,8 +315,9 @@ Normalize raw Kaggle CSV into engine-compatible JSON files.
 ## 11) Webapp Console Status (important)
 
 ### Current state
-- Web console is present under `webapp/`.
-- Runs as a static site; served separately from the API.
+- Web console is present under `webapp/`.- **Premium Design System**: Fully responsive UI using "Deep Space" theme (glassmorphism/blur effects, dark gradients, animated components).
+- **Modernized UX**: 3-step hero workflow (Goal -> Data -> Insights) with clear visual hierarchy.
+- **Improved Tech Stack**: Vanilla JS/CSS (no bloated frameworks) but with high-end aesthetic fidelity (Outfit/Jakarta fonts).- Runs as a static site; served separately from the API.
 - CORS enabled on API for cross-origin webapp access.
 
 ---
