@@ -252,7 +252,8 @@ async function checkAPIHealth() {
     console.warn("⚠️  API offline:", error.message);
     const healthBadge = getElement("healthBadge");
     if (healthBadge) {
-      healthBadge.textContent = "🔴 API";
+      healthBadge.textContent = "🟡 Mock Mode";
+      healthBadge.className = "badge pending"; // Optional styling class
     }
   }
 }
@@ -310,9 +311,11 @@ async function handleDemoData() {
     if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
     scrollToTop();
   } catch (error) {
-    console.error("Demo error:", error);
-    setStatus(`❌ ${error.message}`);
+    console.warn("Demo API unreachable, using mock data...", error);
+    setStatus("✅ Demo complete (Mock Data)");
     displayMockResults();
+    if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
+    scrollToTop();
   } finally {
     setLoading(false);
   }
@@ -349,6 +352,7 @@ async function handleRunAnalysis() {
       source_base_dir: "examples",
       output_path: "out/api_report.md"
     };
+
     const result = await callAPI(apiPayload);
     displayResults(result);
     setStatus("✅ Analysis complete!");
@@ -356,9 +360,17 @@ async function handleRunAnalysis() {
     if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
     scrollToTop();
   } catch (error) {
-    console.error("Analysis error:", error);
-    setStatus(`❌ ${error.message}`);
-    displayMockResults();
+    console.warn("Analysis API unreachable:", error);
+    if (CONFIG.USE_MOCK_DATA_FALLBACK) {
+      setStatus("⚠️ API Offline - Loaded Mock Data");
+      showToast("API Offline. Loaded mock analysis.", "warning");
+      displayMockResults();
+      if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
+      scrollToTop();
+    } else {
+      setStatus(`❌ ${error.message}`);
+      showToast(error.message, "error");
+    }
   } finally {
     setLoading(false);
     appState.analysisRunning = false;
