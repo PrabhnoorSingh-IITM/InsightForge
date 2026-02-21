@@ -35,7 +35,10 @@ body {
 /* Animated Background Orbs */
 .bg-orbs {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   z-index: -1;
   overflow: hidden;
   pointer-events: none;
@@ -796,19 +799,29 @@ body {
 
 .status-badges {
   display: flex;
-  gap: 16px;
+  gap: 8px;
 }
 
 .badge {
-  padding: 6px 12px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--line);
-  border-radius: 20px;
-  font-size: 0.8rem;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  color: var(--text);
+}
+
+.badge.active {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--primary);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.badge.pending {
+  background: rgba(255, 187, 0, 0.1);
+  color: var(--warn);
+  border-color: rgba(255, 187, 0, 0.3);
 }
 
 .hero-story {
