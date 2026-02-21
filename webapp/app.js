@@ -262,7 +262,7 @@ async function checkAPIHealth() {
     console.warn("⚠️  API offline:", error.message);
     const healthBadge = getElement("healthBadge");
     if (healthBadge) {
-      healthBadge.className = "status-badge status-warning";
+      healthBadge.className = "badge warning";
       healthBadge.textContent = "🟡 API Offline";
     }
   }
