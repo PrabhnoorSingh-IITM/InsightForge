@@ -364,18 +364,32 @@ async function handleRunAnalysis() {
 
 async function callAPI(brief) {
   console.log("🔄 Calling API...");
-  const response = await fetch(`${CONFIG.API_BASE_URL}/analyze`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Bypass-Tunnel-Reminder": "true" },
-    body: JSON.stringify(brief),
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), CONFIG.API_TIMEOUT || 30000);
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.detail || `API Error: ${response.status}`);
+  try {
+    const response = await fetch(`${CONFIG.API_BASE_URL}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Bypass-Tunnel-Reminder": "true" },
+      body: JSON.stringify(brief),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      throw new Error(error.detail || `API Error: ${response.status}`);
+    }
+
+    return response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if (err.name === 'AbortError') {
+      throw new Error("API request timed out (30s). The server might be busy or offline.");
+    }
+    throw err;
   }
-
-  return response.json();
 }
 
 // ====================================
