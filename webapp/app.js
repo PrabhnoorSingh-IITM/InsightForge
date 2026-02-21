@@ -94,10 +94,7 @@ function initApp() {
 
   const parallaxBg = document.getElementById('parallaxBg');
   if (parallaxBg) {
-    window.addEventListener('scroll', () => {
-      const scrollY = window.scrollY;
-      parallaxBg.style.transform = `translateY(${scrollY * 0.2}px)`;
-    });
+    // Removed scroll listener that forced background movement
   }
 
   setupEventListeners();
@@ -112,8 +109,7 @@ function setupEventListeners() {
   if (startBtn) {
     startBtn.addEventListener("click", function (e) {
       console.log("✓ Start button clicked!");
-      // If we are on index, we might just link to dashboard.html instead now.
-      // E.g., handled via <a> tag, but keeping listener safe.
+      window.location.href = "dashboard.html";
     });
   }
 
@@ -341,25 +337,33 @@ async function handleRunAnalysis() {
 
     const result = await callAPI(apiPayload);
     displayResults(result);
+    setLoading(false);
+    appState.analysisRunning = false;
     setStatus("✅ Analysis complete!");
     showToast("✅ Analysis complete!", "success");
     if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
     scrollToTop();
   } catch (error) {
-    console.warn("Analysis API unreachable:", error);
+    console.warn("Analysis API unreachable or failed:", error);
+    if (!CONFIG.USE_MOCK_DATA_FALLBACK) {
+      setStatus(`❌ ${error.message}`);
+      showToast(error.message, "error");
+      setLoading(false);
+      appState.analysisRunning = false;
+    }
+  } finally {
     if (CONFIG.USE_MOCK_DATA_FALLBACK) {
       setStatus("⚠️ API Offline - Loaded Mock Data");
       showToast("API Offline. Loaded mock analysis.", "warning");
-      displayMockResults();
+      // Pass the parsed brief parameters directly to ensure accuracy
+      const brief = {
+        product_name: productInput?.value?.trim() || "Product",
+        business_goal: document.querySelector('input[name="goal"]:checked')?.value || "growth",
+        mode: document.querySelector('input[name="mode"]:checked')?.value || "quick",
+      };
+      displayMockResults(brief);
       if (newAnalysisBtn) newAnalysisBtn.style.display = "block";
-      scrollToTop();
-    } else {
-      setStatus(`❌ ${error.message}`);
-      showToast(error.message, "error");
     }
-  } finally {
-    setLoading(false);
-    appState.analysisRunning = false;
   }
 }
 
@@ -418,39 +422,69 @@ function displayResults(result) {
   }
 }
 
-function displayMockResults() {
+function displayMockResults(brief) {
   console.log("🎭 Showing mock results...");
 
-  if (confidenceScore) confidenceScore.textContent = "78%";
-  if (completenessScore) completenessScore.textContent = "85%";
-  if (completenessMeter) completenessMeter.style.width = "85%";
-  if (confidenceBadge) confidenceBadge.textContent = "High";
+  setLoading(true);
+  setStatus("Analyzing data (Mock Mode)...");
 
-  if (riskList) riskList.innerHTML = `
-    <li>High market competition</li>
-    <li>Below-average customer ratings</li>
-    <li>Pricing above competitors</li>
-    <li>Inventory constraints</li>
-  `;
+  // Simulate API delay
+  setTimeout(() => {
+    const isDeep = brief?.mode === "deep";
+    const goal = brief?.business_goal || "growth";
+    const product = brief?.product_name || "Product";
 
-  if (recommendations) recommendations.innerHTML = `
-    <li>Reduce price by 10% to be competitive</li>
-    <li>Improve product quality for better ratings</li>
-    <li>Invest in customer testimonials</li>
-    <li>Launch seasonal campaigns</li>
-  `;
+    // Dynamic metrics
+    const confScore = isDeep ? Math.floor(Math.random() * 15) + 85 : Math.floor(Math.random() * 20) + 60;
+    const completeness = isDeep ? Math.floor(Math.random() * 10) + 90 : Math.floor(Math.random() * 20) + 70;
 
-  if (report) report.innerHTML = `
-    <h4>📋 Analysis Report (Demo Data)</h4>
-    <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-    <h4>Key Metrics</h4>
-    <ul>
-      <li>Market share: 12%</li>
-      <li>Customer satisfaction: 3.8/5</li>
-      <li>Price position: Upper tier</li>
-      <li>Competitor count: 47</li>
-    </ul>
-  `;
+    if (confidenceScore) confidenceScore.textContent = `${confScore}%`;
+    if (completenessScore) completenessScore.textContent = `${completeness}%`;
+    if (completenessMeter) completenessMeter.style.width = `${completeness}%`;
+    if (confidenceBadge) confidenceBadge.textContent = confScore >= 80 ? "High" : confScore >= 60 ? "Medium" : "Low";
+
+    // Dynamic Risks based on goal
+    let risks = [];
+    let recs = [];
+    if (goal === "profitability") {
+      risks = ["Excessive ad spend", "Low margin variants selling most", "High return rates"];
+      recs = ["Increase price by 5%", "Bundle accessories", "Cut bottom 20% of ad targets"];
+    } else if (goal === "retention") {
+      risks = ["Negative reviews on durability", "Low repeat purchase rate", "Strong competitor loyalty programs"];
+      recs = ["Launch email follow-up sequence", "Improve unboxing experience", "Address QA issues in manufacturing"];
+    } else {
+      risks = ["High market competition", "Below-average visibility", "Pricing above market average"];
+      recs = ["Optimize listing keywords", "Run aggressive promotional campaign", "Enhance product imagery"];
+    }
+
+    if (riskList) riskList.innerHTML = risks.map(r => `<li>${r}</li>`).join("");
+    if (recommendations) recommendations.innerHTML = recs.map(r => `<li>${r}</li>`).join("");
+
+    if (report) {
+      report.innerHTML = `
+        <h4>📋 Analysis Report: ${product}</h4>
+        <p><strong>Goal Alignment:</strong> ${goal.toUpperCase()}</p>
+        <p><strong>Mode:</strong> ${isDeep ? "Deep Dive" : "Quick Pulse"}</p>
+        <h4>Key Metrics</h4>
+        <ul>
+          <li>Market share estimation: ${Math.floor(Math.random() * 30) + 5}%</li>
+          <li>Customer satisfaction: ${(Math.random() * 1.5 + 3.5).toFixed(1)}/5</li>
+          <li>Price position: ${Math.random() > 0.5 ? 'Upper' : 'Mid'} tier</li>
+          <li>Competitor count: ${Math.floor(Math.random() * 50) + 10}</li>
+        </ul>
+        <p><em>This is a generated mock response. Connect the live Intelligence API for real data parameters.</em></p>
+      `;
+    }
+
+    setLoading(false);
+    setStatus("✅ Mock Analysis complete!");
+    showToast("Mock Analysis complete.", "success");
+
+    // Ensure the results container is visible
+    const resultsContainer = getElement("resultsContainer");
+    if (resultsContainer) resultsContainer.classList.remove("hidden");
+    scrollToTop();
+  }, 1500); // 1.5 second simulated delay
 }
 
 // ====================================
@@ -467,7 +501,17 @@ function setStatus(message) {
 function setLoading(isLoading) {
   if (!runBtn) return;
   runBtn.disabled = isLoading;
-  runBtn.textContent = isLoading ? "⏳ Analyzing..." : "▶️ Run Analysis";
+
+  const spinner = runBtn.querySelector('.spinner');
+  const btnText = runBtn.querySelector('.btn-text');
+
+  if (isLoading) {
+    if (btnText) btnText.textContent = "Analyzing...";
+    if (spinner) spinner.classList.remove('hidden');
+  } else {
+    if (btnText) btnText.textContent = "Generate Insights";
+    if (spinner) spinner.classList.add('hidden');
+  }
 }
 
 function showToast(message, type = "info") {
