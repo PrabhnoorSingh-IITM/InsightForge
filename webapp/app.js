@@ -321,7 +321,14 @@ async function handleRunAnalysis() {
       scope_value: productInput.value.trim().toUpperCase(),
       mode: document.querySelector('input[name="mode"]:checked')?.value || "quick",
       marketplace: marketplace?.value || "Amazon",
-      region: region?.value || "Global"
+      region: region?.value || "Global",
+      data_sources: {
+        catalog: { path: "datasets/catalog.json" },
+        reviews: { path: "datasets/reviews.json" },
+        pricing: { path: "datasets/pricing.json" },
+        competitors: { path: "datasets/competitors.json" },
+        performance_signals: { path: "datasets/performance_signals.json" }
+      }
     };
 
     console.log("📤 Analysis request:", brief);
