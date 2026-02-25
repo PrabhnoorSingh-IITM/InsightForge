@@ -362,11 +362,11 @@ async function handleRunAnalysis() {
       marketplace: marketplace?.value || "Amazon",
       region: region?.value || "Global",
       data_sources: {
-        catalog: { path: "datasets/catalog.json" },
-        reviews: { path: "datasets/reviews.json" },
-        pricing: { path: "datasets/pricing.json" },
-        competitors: { path: "datasets/competitors.json" },
-        performance_signals: { path: "datasets/performance_signals.json" }
+        catalog: { path: "catalog.json" },
+        reviews: { path: "reviews.json" },
+        pricing: { path: "pricing.json" },
+        competitors: { path: "competitors.json" },
+        performance_signals: { path: "performance_signals.json" }
       }
     };
 
