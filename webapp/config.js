@@ -3,8 +3,8 @@
 // ====================================
 
 // Environment detection
-// Railway production API is currently offline/404, default forcing the live traffic to the localhost Python uvicorn instance
-const apiBaseUrl = "https://pretty-icons-repair.loca.lt";
+// Using the newly provided Railway production API
+const apiBaseUrl = "https://insightforge-production-57a5.up.railway.app";
 
 const isDevelopment = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
 

@@ -15,7 +15,7 @@ let appState = {
 
 const getElement = (id) => {
   const elem = document.getElementById(id);
-  if (!elem) console.warn(`⚠️  Element #${id} not found`);
+  // if (!elem) console.warn(`⚠️  Element #${id} not found`);
   return elem;
 };
 
