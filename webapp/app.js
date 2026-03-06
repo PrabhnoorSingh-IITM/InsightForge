@@ -62,7 +62,7 @@ function initApp() {
   // Check if essential elements exist
   // startBtn is only on index.html, dashboard is on dashboard.html
   if (!startBtn) {
-    console.warn("ℹ️ startBtn not found (Expected if not on index.html)");
+    // Expected on dashboard.html
   }
 
   // --- Intersection Observer for Storytelling Fade-ins ---

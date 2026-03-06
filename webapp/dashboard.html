@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard - InsightForge</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="stylesheet" href="styles.css" />
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
@@ -88,12 +89,12 @@
                     <div class="form-section">
                         <label class="form-label">How detailed?</label>
                         <div class="mode-toggle">
-                            <label class="toggle-item">
-                                <input type="radio" name="mode" value="quick" checked />
+                            <label class="toggle-item" for="modeQuick">
+                                <input type="radio" id="modeQuick" name="mode" value="quick" checked />
                                 <span class="toggle-label">⚡ Quick<small>2 min</small></span>
                             </label>
-                            <label class="toggle-item">
-                                <input type="radio" name="mode" value="deep" />
+                            <label class="toggle-item" for="modeDeep">
+                                <input type="radio" id="modeDeep" name="mode" value="deep" />
                                 <span class="toggle-label">🔍 Deep<small>10 min</small></span>
                             </label>
                         </div>
@@ -126,14 +127,14 @@
                     <div class="form-section" style="grid-column: 1 / -1;">
                         <label class="form-label">Data Source</label>
                         <div class="data-toggle" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                            <label class="toggle-item">
-                                <input type="radio" name="dataMode" value="sample" checked />
+                            <label class="toggle-item" for="dataModeSample">
+                                <input type="radio" id="dataModeSample" name="dataMode" value="sample" checked />
                                 <span class="toggle-label"
                                     style="display:flex; flex-direction:column; padding:14px; background:var(--card); border:1px solid var(--line); border-radius:12px; text-align:center; font-weight:600; cursor:pointer;">🌐
                                     Live API DB</span>
                             </label>
-                            <label class="toggle-item">
-                                <input type="radio" name="dataMode" value="custom" />
+                            <label class="toggle-item" for="dataModeCustom">
+                                <input type="radio" id="dataModeCustom" name="dataMode" value="custom" />
                                 <span class="toggle-label"
                                     style="display:flex; flex-direction:column; padding:14px; background:var(--card); border:1px solid var(--line); border-radius:12px; text-align:center; font-weight:600; cursor:pointer;">📁
                                     Custom CSV</span>
@@ -156,12 +157,13 @@
 
                 <div class="form-row" style="margin-top: 16px;">
                     <div class="form-group">
-                        <label class="form-label">Marketplace</label>
-                        <input id="marketplace" type="text" placeholder="Amazon" class="input-small" />
+                        <label class="form-label" for="marketplace">Marketplace</label>
+                        <input id="marketplace" type="text" placeholder="Amazon" class="input-small"
+                            autocomplete="off" />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Region</label>
-                        <input id="region" type="text" placeholder="India" class="input-small" />
+                        <label class="form-label" for="region">Region</label>
+                        <input id="region" type="text" placeholder="India" class="input-small" autocomplete="off" />
                     </div>
                 </div>
             </div>

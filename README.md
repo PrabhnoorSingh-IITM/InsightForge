@@ -77,6 +77,8 @@ git lfs pull
 
 The API includes a built-in rate limiter (30 requests per minute) and structured logging. API key authentication can be enabled by setting the `ECOM_AGENT_API_KEY` environment variable.
 
+**Deployment Note (Railway):** To bypass the 100MB+ payload payload limitations on serverless hosts like Railway, the `datasets/raw/` directory is explicitly excluded via `.railwayignore`. Only the lightweight `datasets/processed/` JSON files are deployed for the live analysis engine.
+
 ## License
 
 MIT
