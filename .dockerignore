@@ -2,9 +2,9 @@
 .git
 .git/
 .git/**
-datasets
-datasets/
-datasets/**
+# datasets
+# datasets/
+# datasets/**
 .venv
 .venv/
 .venv/**
