@@ -491,7 +491,11 @@ function displayResults(result) {
   }
 
   if (riskList && result.risks?.length) {
-    riskList.innerHTML = result.risks.slice(0, 5).map(r => `<li>${r}</li>`).join("");
+    if (result.risks.length === 1 && result.risks[0].toLowerCase() === "none") {
+      riskList.innerHTML = `<li style="color: var(--primary); border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.05);">✅ No critical risks identified for this segment.</li>`;
+    } else {
+      riskList.innerHTML = result.risks.slice(0, 5).map(r => `<li>${r}</li>`).join("");
+    }
   }
 
   if (recommendations && result.recommendations?.length) {
