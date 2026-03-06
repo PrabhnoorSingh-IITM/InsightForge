@@ -148,22 +148,25 @@ function setupEventListeners() {
     downloadPdfBtn.addEventListener("click", function (e) {
       e.preventDefault();
       if (!report) return;
+      const resultsContainer = getElement("resultsContainer");
+      if (!resultsContainer) return;
+
       const opt = {
-        margin: [0.75, 0.5, 0.75, 0.5],
+        margin: [0.5, 0.5, 0.5, 0.5],
         filename: `${productInput.value.trim() || 'InsightForge'}_Intel_Report.pdf`,
         image: { type: 'jpeg', quality: 1.0 },
-        html2canvas: { scale: 2, useCORS: true },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#07090b', windowWidth: 1200 },
         jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       showToast("Generating PDF...", "info");
-      report.classList.add("pdf-export");
-      html2pdf().set(opt).from(report).save().then(() => {
-        report.classList.remove("pdf-export");
+      resultsContainer.classList.add("pdf-export-mode");
+      html2pdf().set(opt).from(resultsContainer).save().then(() => {
+        resultsContainer.classList.remove("pdf-export-mode");
         showToast("PDF Downloaded!", "success");
       }).catch((err) => {
-        report.classList.remove("pdf-export");
+        resultsContainer.classList.remove("pdf-export-mode");
         console.error("PDF generation failed:", err);
       });
     });
@@ -491,10 +494,17 @@ function displayResults(result) {
   }
 
   if (riskList && result.risks?.length) {
-    if (result.risks.length === 1 && result.risks[0].toLowerCase() === "none") {
+    const filteredRisks = result.risks.filter(r => {
+      const lower = r.toLowerCase().trim();
+      if (!lower || lower === "none" || lower === "- none" || lower.includes("no severe") || lower === "opportunities:") return false;
+      if (lower.startsWith("improve") || lower.startsWith("gain") || lower.startsWith("leverage")) return false;
+      return true;
+    });
+
+    if (filteredRisks.length === 0) {
       riskList.innerHTML = `<li style="color: var(--primary); border-color: rgba(0, 255, 136, 0.3); background: rgba(0, 255, 136, 0.05);">✅ No critical risks identified for this segment.</li>`;
     } else {
-      riskList.innerHTML = result.risks.slice(0, 5).map(r => `<li>${r}</li>`).join("");
+      riskList.innerHTML = filteredRisks.slice(0, 5).map(r => `<li>${r.replace(/^- /, '')}</li>`).join("");
     }
   }
 

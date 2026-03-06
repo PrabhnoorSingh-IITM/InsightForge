@@ -803,33 +803,20 @@ body {
 }
 
 /* PDF Export Overrides */
-.report-box.pdf-export {
+.pdf-export-mode {
+  background: #07090b !important;
+  padding: 24px !important;
+  border: none !important;
+}
+
+.pdf-export-mode .report-box {
   max-height: none !important;
   height: auto !important;
   overflow: visible !important;
-  background: #ffffff !important;
-  color: #000000 !important;
-  border: 1px solid #e5e7eb !important;
-  padding: 40px !important;
-  box-shadow: none !important;
 }
 
-.report-box.pdf-export * {
-  color: #000000 !important;
-  text-shadow: none !important;
-}
-
-.report-box.pdf-export h1,
-.report-box.pdf-export h2,
-.report-box.pdf-export h3 {
-  color: #111827 !important;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 8px;
-  margin-top: 24px;
-}
-
-.report-box.pdf-export ul li::before {
-  color: #059669 !important;
+.pdf-export-mode button {
+  display: none !important;
 }
 
 .badge {
